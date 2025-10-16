@@ -10,7 +10,8 @@ app.use(cors());
 app.use(express.json());
 
 // เชื่อมต่อ DB
-const db = new sqlite3.Database('./table.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err)=>{
+const dbPath = path.resolve(__dirname, 'table.db');
+const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err)=>{
     if (err) return console.error(err.message);
 });
 
