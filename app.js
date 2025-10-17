@@ -10,10 +10,8 @@ app.use(cors());
 app.use(express.json());
 
 // เชื่อมต่อ DB
-const dbPath = path.resolve(__dirname, 'table.db');
-const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err)=>{
+const db = new sqlite3.Database('./table.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err)=>{
     if (err) return console.error(err.message);
-    else console.log('Connected to SQLite database.');
 });
 
 // ✅ สร้างตาราง users
@@ -155,6 +153,4 @@ app.delete('/saves/:id', (req, res) => {
 
 // ---------------------------------------------
 
-// ✅ ใช้ PORT จาก environment (สำคัญสำหรับ Railway)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(3000, ()=> console.log("Server running on port 3000"));
