@@ -199,21 +199,36 @@ app.delete("/saves/:id", async (req, res) => {
 });
 
 app.post("/story", async (req, res) => {
-    const {
+  const {
+    scene_id, text, background, character, character_left, character_right,
+    delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
+    choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
+    next, back
+  } = req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO story (
         scene_id, text, background, character, character_left, character_right,
         delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
-        choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next
-    } = req.body;
+        choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
+        next, back
+      ) VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18
+      )`,
+      [
+        scene_id, text, background, character, character_left, character_right,
+        delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
+        choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
+        next, back
+      ]
+    );
 
-    try {
-        await pool.query(
-            `INSERT INTO story (scene_id, text, background, character, character_left, character_right, delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next, choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next, back ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
-            [scene_id, text, background, character, character_left, character_right, delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next, choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next]
-        );
-        res.json({ success: true, message: "Story scene created" });
-    } catch (err) {
-        res.json({ success: false, error: err.message });
-    }
+    res.json({ success: true, message: "Story scene created" });
+  } catch (err) {
+    console.error("Story insert error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.get("/story", async (req, res) => {
