@@ -25,7 +25,7 @@ app.use(cors({
 async function init() {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
+        username TEXTNOT NULL,
         password TEXT NOT NULL,
         email TEXT
     )`);
@@ -38,6 +38,27 @@ async function init() {
         variables TEXT,
         save_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS story (
+      id SERIAL PRIMARY KEY,
+      scene_id TEXT UNIQUE NOT NULL,
+      text TEXT,
+      background TEXT,
+      character TEXT,
+      character_left TEXT,
+      character_right TEXT,
+      delay INTEGER,
+      diarytext TEXT,
+      choice1_text TEXT,
+      choice1_next TEXT,
+      choice2_text TEXT,
+      choice2_next TEXT,
+      choice_position_top1 TEXT,
+      choice_position_left1 TEXT,
+      choice_position_top2 TEXT,
+      choice_position_left2 TEXT,
+      next TEXT,
+      back TEXT
     )`);
     console.log("Tables ready!");
     app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
@@ -174,5 +195,71 @@ app.delete("/saves/:id", async (req, res) => {
     res.json({ success: true, message: "Save deleted" });
   } catch (err) {
     res.json({ success: false, error: err.message });
+  }
+});
+
+app.post("/story", async (req, res) => {
+    const {
+        scene_id, text, background, character, character_left, character_right,
+        delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
+        choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next
+    } = req.body;
+
+    try {
+        await pool.query(
+            `INSERT INTO story (scene_id, text, background, character, character_left, character_right, delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next, choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next, back ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+            [scene_id, text, background, character, character_left, character_right, delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next, choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2, next]
+        );
+        res.json({ success: true, message: "Story scene created" });
+    } catch (err) {
+        res.json({ success: false, error: err.message });
+    }
+});
+
+app.get("/story", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM story ORDER BY id ASC");
+        res.json(result.rows);
+    } catch (err) {
+        res.json({ success: false, error: err.message });
+    }
+});
+
+app.get("/story/:scene_id", async (req, res) => {
+  const { scene_id } = req.params;
+  try {
+    const result = await pool.query("SELECT * FROM story WHERE scene_id = $1", [scene_id]);
+    if (result.rows.length === 0)
+      return res.status(404).json({ success: false, message: "Scene not found" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/story/:scene_id", async (req, res) => {
+  const { scene_id } = req.params;
+  const fields = req.body;
+  const keys = Object.keys(fields);
+  const values = Object.values(fields);
+
+  const setClause = keys.map((key, i) => `${key}=$${i + 1}`).join(", ");
+  const query = `UPDATE story SET ${setClause} WHERE scene_id=$${keys.length + 1}`;
+
+  try {
+    await pool.query(query, [...values, scene_id]);
+    res.json({ success: true, message: `Scene ${scene_id} updated.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete("/story/:scene_id", async (req, res) => {
+  const { scene_id } = req.params;
+  try {
+    await pool.query("DELETE FROM story WHERE scene_id=$1", [scene_id]);
+    res.json({ success: true, message: `Scene ${scene_id} deleted.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
