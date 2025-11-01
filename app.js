@@ -162,11 +162,11 @@ app.delete("/users/:id", async (req, res) => {
 app.post("/saves", async (req, res) => {
   const { user_id, save_name, current_scene, scene_history, variables } = req.body;
   try {
-    await pool.query(
-        "INSERT INTO saves (user_id, save_name, current_scene, scene_history, variables) VALUES ($1, $2, $3, $4, $5)",
+    const result = await pool.query(
+        "INSERT INTO saves (user_id, save_name, current_scene, scene_history, variables) VALUES ($1, $2, $3, $4, $5) RETURNING *",
         [user_id, save_name, current_scene, scene_history, JSON.stringify(variables)]
     );
-    res.json({ success: true, message: "Save created" });
+    res.json({ success: true, message: "Save created" , save: result.rows[0]});
   } catch (err) {
     res.json({ success: false, error: err.message });
   }
@@ -184,6 +184,27 @@ app.get("/saves/:user_id", async (req, res) => {
   } catch (err) {
     res.json({ success: false, error: err.message });
   }
+});
+
+// 🚀 เพิ่มใหม่: อัปเดตเซฟ (สำหรับ Auto Save)
+app.put("/saves/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    // รับข้อมูลที่จะอัปเดต (scene_history, variables, current_scene)
+    const { scene_history, variables, current_scene } = req.body;
+
+    try {
+        await pool.query(
+            // อัปเดต 3 คอลัมน์นี้ + อัปเดตเวลา save_time
+            `UPDATE saves 
+             SET scene_history = $1, variables = $2, current_scene = $3, save_time = CURRENT_TIMESTAMP
+             WHERE id = $4`,
+            [scene_history, JSON.stringify(variables), current_scene, id]
+        );
+        res.json({ success: true, message: "Game auto-saved." });
+    } catch (err) {
+        console.error("Auto-save Error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 // ✅ ลบเซฟ
