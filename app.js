@@ -25,16 +25,18 @@ app.use(cors({
 async function init() {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username TEXTNOT NULL,
+        username TEXT NOT NULL,
         password TEXT NOT NULL,
-        email TEXT
+        email TEXT,
+        role TEXT
     )`);
-
+//scene_history TEXT NOT NULL
     await pool.query(`CREATE TABLE IF NOT EXISTS saves (
         id SERIAL PRIMARY KEY,
         user_id INTEGER,
         save_name TEXT,
         current_scene TEXT,
+        scene_history TEXT,
         variables TEXT,
         save_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -158,11 +160,11 @@ app.delete("/users/:id", async (req, res) => {
 
 // ✅ บันทึกเซฟ
 app.post("/saves", async (req, res) => {
-  const { user_id, save_name, current_scene, variables } = req.body;
+  const { user_id, save_name, current_scene, scene_history, variables } = req.body;
   try {
     await pool.query(
-        "INSERT INTO saves (user_id, save_name, current_scene, variables) VALUES ($1, $2, $3, $4)",
-        [user_id, save_name, current_scene, JSON.stringify(variables)]
+        "INSERT INTO saves (user_id, save_name, current_scene, scene_history, variables) VALUES ($1, $2, $3, $4, $5)",
+        [user_id, save_name, current_scene, scene_history, JSON.stringify(variables)]
     );
     res.json({ success: true, message: "Save created" });
   } catch (err) {
