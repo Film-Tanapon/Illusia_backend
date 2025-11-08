@@ -25,9 +25,9 @@ app.use(cors({
 async function init() {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        email TEXT,
+        email TEXT UNIQUE,
         role TEXT
     )`);
 //scene_history TEXT NOT NULL
@@ -81,7 +81,14 @@ app.post("/users", async (req, res) => {
     );
     res.json({ success: true, message: "User created" });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    if (err.code === '23505') { 
+        if (err.constraint === 'users_username_key' || err.constraint === 'unique_username'){
+          return res.json({ success: false, error: "Username already taken." });
+        }
+        if (err.constraint === 'users_email_key' || err.constraint === 'unique_email') {
+          return res.json({ success: false, error: "Email already taken." });
+      }
+    }
   }
 });
 
