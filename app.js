@@ -46,6 +46,7 @@ async function init() {
       scene_id TEXT UNIQUE NOT NULL,
       text TEXT,
       music TEXT,
+      sfx TEXT,
       background TEXT,
       character TEXT,
       character_left TEXT,
@@ -231,7 +232,7 @@ app.delete("/saves/:id", async (req, res) => {
 
 app.post("/story", async (req, res) => {
   const {
-    scene_id, text, music, background, character, character_left, character_right,
+    scene_id, text, music,sfx, background, character, character_left, character_right,
     delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
     choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
     next, back
@@ -240,15 +241,15 @@ app.post("/story", async (req, res) => {
   try {
     await pool.query(
       `INSERT INTO story (
-        scene_id, text, music, background, character, character_left, character_right,
+        scene_id, text, music, sfx, background, character, character_left, character_right,
         delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
         choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
         next, back
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,20
       )`,
       [
-        scene_id, text, music, background, character, character_left, character_right,
+        scene_id, text, music, sfx, background, character, character_left, character_right,
         delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
         choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
         next, back
