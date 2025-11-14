@@ -246,7 +246,7 @@ app.post("/story", async (req, res) => {
         choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
         next, back
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,20
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20
       )`,
       [
         scene_id, text, music, sfx, background, character, character_left, character_right,
