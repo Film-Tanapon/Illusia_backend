@@ -23,53 +23,67 @@ app.use(cors({
 
 // ✅ สร้างตาราง
 async function init() {
-  await pool.query(`CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        email TEXT UNIQUE,
-        role TEXT
-    )`);
-  //scene_history TEXT NOT NULL
-  await pool.query(`CREATE TABLE IF NOT EXISTS saves (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER,
-        save_name TEXT,
-        current_scene TEXT,
-        scene_history TEXT,
-        variables TEXT,
-        save_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-    )`);
-  await pool.query(`CREATE TABLE IF NOT EXISTS story (
-      id SERIAL PRIMARY KEY,
-      scene_id TEXT UNIQUE NOT NULL,
-      text TEXT,
-      music TEXT,
-      sfx TEXT,
-      background TEXT,
-      character TEXT,
-      character_left TEXT,
-      character_right TEXT,
-      delay INTEGER,
-      diarytext TEXT,
-      choice1_text TEXT,
-      choice1_next TEXT,
-      choice2_text TEXT,
-      choice2_next TEXT,
-      choice_position_top1 TEXT,
-      choice_position_left1 TEXT,
-      choice_position_top2 TEXT,
-      choice_position_left2 TEXT,
-      next TEXT,
-      back TEXT
-    )`);
-  console.log("Tables ready!");
-  app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
+  // 1. สร้างตาราง (โค้ดเดิมของคุณ)
+  await pool.query(`CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        email TEXT UNIQUE,
+        role TEXT
+    )`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS saves (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        save_name TEXT,
+        current_scene TEXT,
+        scene_history TEXT,
+        variables TEXT,
+        save_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS story (
+      id SERIAL PRIMARY KEY,
+      scene_id TEXT UNIQUE NOT NULL,
+      text TEXT,
+      music TEXT,
+      sfx TEXT,
+      background TEXT,
+      character TEXT,
+      character_left TEXT,
+      character_right TEXT,
+      delay INTEGER,
+      diarytext TEXT,
+      choice1_text TEXT,
+      choice1_next TEXT,
+      choice2_text TEXT,
+      choice2_next TEXT,
+      choice_position_top1 TEXT,
+      choice_position_left1 TEXT,
+      choice_position_top2 TEXT,
+      choice_position_left2 TEXT,
+      next TEXT,
+      back TEXT
+    )`);
+
+  // 2. 🚀 [แก้ไข] อัปเกรดตารางเก่า (วิธีใหม่ที่ปลอดภัย)
+  // ลบ DO $$...$$ ที่มีปัญหาทิ้ง แล้วใช้ 2 บรรทัดนี้แทน
+  // นี่คือการการันตีว่าตารางเก่า จะมีคอลัมน์ music และ sfx
+  try {
+    await pool.query(`ALTER TABLE story ADD COLUMN IF NOT EXISTS music TEXT;`);
+    await pool.query(`ALTER TABLE story ADD COLUMN IF NOT EXISTS sfx TEXT;`);
+    console.log("Database migration (music, sfx) successful.");
+  } catch (err) {
+    console.error("Migration failed:", err);
+    // หากล้มเหลว ให้หยุดเซิร์ฟเวอร์ไปเลย
+    throw err; 
+  }
+  
+  // 3. (โค้ดเดิมของคุณ)
+  console.log("Tables ready!");
+  app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
 }
 
 init();
-
 // ------------------- USERS -------------------
 
 // ✅ Register
@@ -92,7 +106,7 @@ app.post("/users", async (req, res) => {
       }
     }
     console.error("Register Error:", err);
-      return res.status(500).json({ success: false, error: "Internal server error." });
+    return res.status(500).json({ success: false, error: "Internal server error." });
   }
 });
 
