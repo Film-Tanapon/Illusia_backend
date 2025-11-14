@@ -241,7 +241,7 @@ app.post("/story", async (req, res) => {
   try {
     await pool.query(
       `INSERT INTO story (
-        scene_id, text, background, character, character_left, character_right, music, sfx
+        scene_id, text, background, character, character_left, character_right, music, sfx,
         delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
         choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
         next, back
