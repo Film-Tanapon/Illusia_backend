@@ -44,29 +44,31 @@ async function init() {
         save_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     )`);
-  await pool.query(`CREATE TABLE IF NOT EXISTS story (
-      id SERIAL PRIMARY KEY,
-      scene_id TEXT UNIQUE NOT NULL,
-      text TEXT,
-      music TEXT,
-      sfx TEXT,
-      background TEXT,
-      character TEXT,
-      character_left TEXT,
-      character_right TEXT,
-      delay INTEGER,
-      diarytext TEXT,
-      choice1_text TEXT,
-      choice1_next TEXT,
-      choice2_text TEXT,
-      choice2_next TEXT,
-      choice_position_top1 TEXT,
-      choice_position_left1 TEXT,
-      choice_position_top2 TEXT,
-      choice_position_left2 TEXT,
-      next TEXT,
-      back TEXT
-    )`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS story (
+      id SERIAL PRIMARY KEY,
+      scene_id TEXT UNIQUE NOT NULL,
+      text TEXT,
+      music TEXT,
+      sfx TEXT,
+      background TEXT,
+      character TEXT,
+      character_left TEXT,
+      character_right TEXT,
+      delay INTEGER,
+      diarytext TEXT,
+      choice1_text TEXT,
+      choice1_next TEXT,
+      choice2_text TEXT,
+      choice2_next TEXT,
+      choice_position_top1 TEXT,
+      choice_position_left1 TEXT,
+      choice_position_top2 TEXT,
+      choice_position_left2 TEXT,
+      next TEXT,
+      back TEXT
+    )
+  `);
 
   // 2. 🚀 [แก้ไข] อัปเกรดตารางเก่า (วิธีใหม่ที่ปลอดภัย)
   // ลบ DO $$...$$ ที่มีปัญหาทิ้ง แล้วใช้ 2 บรรทัดนี้แทน
