@@ -91,6 +91,8 @@ app.post("/users", async (req, res) => {
         return res.json({ success: false, error: "Email already taken." });
       }
     }
+    console.error("Register Error:", err);
+      return res.status(500).json({ success: false, error: "Internal server error." });
   }
 });
 
@@ -232,7 +234,7 @@ app.delete("/saves/:id", async (req, res) => {
 
 app.post("/story", async (req, res) => {
   const {
-    scene_id, text, music,sfx, background, character, character_left, character_right,
+    scene_id, text, music, sfx, background, character, character_left, character_right,
     delay, diarytext, choice1_text, choice1_next, choice2_text, choice2_next,
     choice_position_top1, choice_position_left1, choice_position_top2, choice_position_left2,
     next, back
@@ -285,20 +287,42 @@ app.get("/story/:scene_id", async (req, res) => {
 });
 
 app.put("/story/:scene_id", async (req, res) => {
-  const { scene_id } = req.params;
-  const fields = req.body;
+  const { scene_id } = req.params;
+  const fields = req.body;
+
+  const allowedKeys = [
+    'text', 'music', 'sfx', 'background', 'character', 'character_left', 'character_right',
+    'delay', 'diarytext', 'choice1_text', 'choice1_next', 'choice2_text', 'choice2_next',
+    'choice_position_top1', 'choice_position_left1', 'choice_position_top2', 'choice_position_left2',
+    'next', 'back', 'scene_id'
+  ];
+
   const keys = Object.keys(fields);
-  const values = Object.values(fields);
+  const values = [];
+  const setClauses = [];
+  let valueIndex = 1;
 
-  const setClause = keys.map((key, i) => `${key}=$${i + 1}`).join(", ");
-  const query = `UPDATE story SET ${setClause} WHERE scene_id=$${keys.length + 1}`;
+  keys.forEach(key => {
+    if (allowedKeys.includes(key)) {
+      setClauses.push(`${key}=$${valueIndex}`);
+      values.push(fields[key]);
+      valueIndex++;
+    }
+  });
 
-  try {
-    await pool.query(query, [...values, scene_id]);
-    res.json({ success: true, message: `Scene ${scene_id} updated.` });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+  if (setClauses.length === 0) {
+    return res.status(400).json({ success: false, error: "No valid fields to update." });
   }
+
+  const query = `UPDATE story SET ${setClauses.join(", ")} WHERE scene_id=$${valueIndex}`;
+
+  try {
+    await pool.query(query, [...values, scene_id]); 
+    res.json({ success: true, message: `Scene ${scene_id} updated.` });
+  } catch (err) {
+    console.error("Story Update Error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.delete("/story/:scene_id", async (req, res) => {
